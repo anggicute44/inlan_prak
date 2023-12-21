@@ -1,0 +1,130 @@
+vlan 100: 192.168.100.0/24
+vlan 200: 192.168.200.0/24
+vlan 250: 192.168.250.0/24
+
+
+
+R1
+en
+conf t
+ip route 192.168.100.0 255.255.255.0 10.10.0.6
+ip route 192.168.200.0 255.255.255.0 10.10.0.6
+ip route 192.168.250.0 255.255.255.0 10.10.0.6
+int se0/1/0
+no sh
+ip add 10.10.0.5 255.255.255.252
+
+int g0/0/0
+duplex auto
+speed auto
+no sh
+
+int g0/0/0.100
+encap dot 100
+ip add 192.168.100.2 255.255.255.0
+standby version 2
+standby 1 ip 192.168.100.1
+standby 1 priority 150
+standby 1 preempt
+
+int g0/0/0.200
+encap dot 200
+ip add 192.168.200.2 255.255.255.0
+standby version 2
+standby 1 ip 192.168.200.1
+standby 1 priority 150
+standby 1 preempt
+
+int g0/0/1
+no sh
+ip add 192.168.250.2 255.255.255.0
+standby version 2
+standby 2 ip 192.168.250.1
+standby 2 priority 150
+standby 2 preempt
+
+
+R2
+en
+conf t
+int se0/1/0
+no sh
+ip add 10.10.0.6 255.255.255.252
+
+int g0/0/0
+duplex auto
+speed auto
+no sh
+
+int g0/0/0.100
+encap dot 100
+ip add 192.168.100.3 255.255.255.0
+standby version 2
+standby 1 ip 192.168.100.1
+standby 1 priority 100
+standby 1 preempt
+
+int g0/0/0.200
+encap dot 200
+ip add 192.168.200.3 255.255.255.0
+standby version 2
+standby 1 ip 192.168.200.1
+standby 1 priority 100
+standby 1 preempt
+
+int g0/0/1
+no sh
+duplex auto
+speed auto
+ip add 192.168.250.3 255.255.255.0
+standby version 2
+standby 2 ip 192.168.250.1
+standby 2 priority 100
+standby 2 preempt
+
+
+S1
+en
+conf t
+vlan 100
+name Dosen
+exit
+int fa0/1
+sw mode acc
+sw acc vlan 100
+int range fa0/10-20
+sw mode acc
+sw acc vlan 100
+
+S2
+en
+conf t
+vlan 100
+name Dosen
+vlan 200
+name Mahasiswa
+exit
+int fa0/1
+sw mode acc
+sw acc vlan 100
+int range fa0/10-20
+sw mode acc
+sw acc vlan 200
+int range gig0/1-gig0/2
+sw mode trunk
+sw trunk allowed vlan 100,200
+
+S3
+en
+conf t
+vlan 250
+name Lab
+exit
+int range fa0/10-20
+sw mode acc
+sw acc vlan 250
+int range gig0/1-gig0/2
+sw mode acc
+sw acc vlan 250
+
+
